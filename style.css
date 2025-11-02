@@ -1,0 +1,150 @@
+/* styles.css: Рожева адаптивна стилізація для інтерфейсу тестування */
+
+/* === БАЗОВІ НАЛАШТУВАННЯ ТА ФОН (З ВАШОГО ДРУГОГО КОДУ) === */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 25px 0; /* Додано верхній/нижній відступ */
+    background-color: #fce4ec; /* Дуже світло-рожевий фон */
+    color: #4a148c; /* Темно-фіолетовий текст */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden; /* Запобігання горизонтальному прокручуванню */
+}
+
+/* === СТИЛІЗАЦІЯ КОНТЕЙНЕРІВ ТЕСТУВАННЯ (З ВАШОГО ПЕРШОГО КОДУ) === */
+#intro, #game-area {
+    padding: 20px;
+    border: 1px solid #ffb3c1; /* Рожева рамка */
+    border-radius: 10px; /* Трохи більш заокруглені кути */
+    margin-top: 20px;
+    width: 90%; /* Більш адаптивна ширина */
+    max-width: 600px;
+    background: white;
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.05); /* Легка тінь */
+}
+
+/* Стилізація заголовка */
+h1 {
+    text-align: center;
+    color: #e91e63; /* Яскравий рожевий для заголовка */
+    margin-bottom: 20px;
+    padding: 10px 0;
+    border-bottom: 2px solid #ff4081; /* Рожева лінія під заголовком */
+}
+
+/* === СТИЛІЗАЦІЯ КНОПОК ТА ЕЛЕМЕНТІВ ВИБОРУ (CHOICES) === */
+
+/* Спільні стилі для всіх кнопок */
+button {
+    padding: 12px 18px;
+    margin: 8px 5px;
+    cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.1s ease;
+}
+
+/* Кнопки ДІЇ (Start, Next) - Темно-рожеві/Бордові */
+#start-btn, #next-btn {
+    background-color: #a00000;
+    color: white;
+}
+
+#start-btn:hover, #next-btn:hover {
+    background-color: #e91e63;
+    transform: translateY(-1px);
+}
+
+/* Кнопка ПРОПУСТИТИ (Skip) - Помаранчево-рожева */
+#skip-btn {
+    background-color: #ff80ab;
+    color: white;
+}
+
+#skip-btn:hover {
+    background-color: #f50057;
+    transform: translateY(-1px);
+}
+
+/* Кнопки РЕЗУЛЬТАТИ/ЕКСПОРТ - Блакитно-рожеві */
+#restart-btn, #export-btn {
+    background-color: #80d8ff; /* Більш світлий, "чистий" тон */
+    color: #4a148c; /* Темно-фіолетовий текст */
+}
+
+#restart-btn:hover, #export-btn:hover {
+    background-color: #40c4ff;
+    transform: translateY(-1px);
+}
+
+/* Стилізація варіантів відповіді */
+.choice {
+    padding: 15px; /* Більші відступи */
+    margin: 10px 0;
+    border: 1px solid #ffcdd2; /* Світло-рожева рамка */
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.choice:hover {
+    background-color: #ffebee; /* Дуже світло-рожевий при наведенні */
+}
+
+/* Коректна відповідь - Зелено-рожева */
+.choice.correct {
+    background-color: #c8e6c9; 
+    border-color: #a5d6a7; 
+}
+
+/* Неправильна відповідь - Червоно-рожева */
+.choice.wrong {
+    background-color: #ffcdd2;
+    border-color: #ef9a9a;
+}
+
+/* Статистика */
+#stats {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+    font-weight: bold;
+    color: #e91e63; /* Рожевий текст для статистики */
+}
+
+/* === ПРОГРЕС-БАР === */
+#progress-bar-container {
+    width: 100%;
+    background-color: #f8bbd0; /* Світло-рожевий фон */
+    border-radius: 8px;
+    margin-bottom: 15px;
+    overflow: hidden; /* Обрізає progress-bar, щоб він був заокруглений */
+}
+
+#progress-bar {
+    height: 25px; /* Більша висота */
+    background-color: #e91e63; /* Яскравий рожевий колір */
+    width: 0%;
+    transition: width 0.5s;
+    text-align: center;
+    color: white;
+    line-height: 25px;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* === МЕДІА-ЗАПИТИ ДЛЯ АДАПТИВНОСТІ === */
+@media (max-width: 600px) {
+    #intro, #game-area {
+        width: 95%; /* Більша ширина на мобільних */
+        padding: 15px;
+    }
+
+    button {
+        width: 100%; /* Кнопки займають всю ширину на мобільних */
+        margin: 5px 0;
+    }
+}
