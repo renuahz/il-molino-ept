@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Il Molino Quiz: Майстер Меню</title>
+    <style>
+        /* Мінімальні CSS стилі для роботи */
+        body { font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; background-color: #f0f0f0; }
+        #intro, #game-area { padding: 20px; border: 1px solid #ccc; border-radius: 8px; margin-top: 20px; width: 80%; max-width: 600px; background: white; }
+        .choice { padding: 10px; margin: 8px 0; border: 1px solid #ddd; cursor: pointer; transition: background-color 0.3s; }
+        .choice:hover { background-color: #eee; }
+        .choice.correct { background-color: #d4edda; border-color: #c3e6cb; }
+        .choice.wrong { background-color: #f8d7da; border-color: #f5c6cb; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; border: none; border-radius: 4px; }
+        #start-btn, #next-btn { background-color: #a00000; color: white; }
+        #skip-btn { background-color: #f0ad4e; color: white; }
+        #restart-btn, #export-btn { background-color: #5bc0de; color: white; }
+        #stats { display: flex; justify-content: space-around; margin-bottom: 20px; font-weight: bold; }
+        #progress-bar-container { width: 100%; background-color: #eee; border-radius: 5px; margin-bottom: 15px; }
+        #progress-bar { height: 20px; background-color: #a00000; width: 0%; transition: width 0.5s; border-radius: 5px; text-align: center; color: white; line-height: 20px; }
+    </style>
+</head>
+<body>
+
+    <h1>Il Molino Menu Master: Тест "Інгредієнт-Діш"</h1>
+
+    <div id="intro">
+        <div style="font-size: 1.2em; margin-bottom: 15px;">Готова? Почнемо!</div>
+        <button id="start-btn">Почати Тест</button>
+        <button id="restart-btn" style="display:none;">Перезапустити</button>
+        <button id="export-btn" style="display:none;">Експорт результатів</button>
+    </div>
+
+    <div id="game-area" style="display:none;">
+        <div id="stats">
+            <span>Прогрес: <span id="done-count">0</span> / <span id="total-count">0</span></span>
+            <span>Вірно: <span id="correct-count">0</span></span>
+            <span>Невірно: <span id="wrong-count">0</span></span>
+            <span>Очки: <span id="score-el">0</span></span>
+        </div>
+        
+        <div id="progress-bar-container"><div id="progress-bar"></div></div>
+
+        <h2>Який склад відповідає цій піці?</h2>
+        <h3 id="pizza-name" style="color:#a00000;">Назва Піци</h3>
+        
+        <div id="choices-el">
+        </div>
+
+        <button id="next-btn" style="display:none;">Наступне питання</button>
+        <button id="skip-btn">Пропустити</button>
+    </div>
+
+
+    <script>
+        // 🍕 *** ПОЧАТОК: ОБГОРТКА DOMContentLoaded *** 🍝
+        // Гарантує, що код виконається лише після того, як браузер завантажить усі HTML-елементи.
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- 1. ДАНІ ДЛЯ ТЕСТУВАННЯ ---
+            const pizzaData = [
+                { name: "Піца Маргарита ді Парма", desc: "Парма на бортах, бейбі моцарела, мінітомати, базилік. Соус на основі перетертих томатів зі спеціями." },
+                { name: "Піца з беконом, гарбузом та горгонзолою", desc: "Бекон, моцарела, горгонзола, пюре гарбуза, карамелізована цибуля, трюфельний мед, рукола та мініперчики." },
+                { name: "Піца з тунцем та каперсами", desc: "Тунець, каперси, моцарела, пармезан, соєвий соус, рукола, перець та петрушка." },
+                { name: "Піца Дабл Кватро чіз & міт", desc: "Моцарела, проволоне, грано падано, горгонзола, куряче філе, бекон, мисливські ковбаски, прошутто котто, вершковий соус, маринована цибуля." },
+                { name: "Піца Чотири м’яса", desc: "Перетерті томати, моцарела, бекон, маринована синя цибуля, куряче філе су-від, мисливські ковбаски, прошуто кото." },
+                { name: "Піца Пепероні", desc: "Перетерті томати, моцарела, салямі пікантна пепероні." },
+                { name: "Піца Кватро Формаджі з пармою та малиновим кюлі", desc: "Парма, пармезан, моцарела, проволоне, горгонзола, карамелізована цибуля, рукола, розмарин, малинове кюлі." },
+                { name: "Піца Кватро Формаджі з в’яленими томатами та трюфельним медом", desc: "Моцарела, горгонзола, пармезан, проволоне, в’ялені томати, трюфельний мед." },
+                { name: "Піца Маргарита", desc: "Перетерті томати, моцарела, базилік." },
+                { name: "Піца Неаполітана", desc: "Перетерті томати, моцарела, прошуто кото, свіжі печериці, базилік, оливкова олія." },
+                { name: "Піца Сетте Карне з маринованими огірками", desc: "Мисливські та мюнхенські ковбаски, салямі мілано, салямі пепероні, прошуто кото, бекон, куряче філе, моцарела, соус барбекю, мариновані огірки та цибуля." },
+                { name: "Піца Баварія", desc: "Перетерті томати, моцарела, мисливські та мюнхенські ковбаски, гірчиця, свіжі печериці." },
+                { name: "Піца Емілія Романья з пармезаном", desc: "Моцарела, пармська шинка, рукола, пармезан." },
+                { name: "Піца Джульяно", desc: "Моцарела, куряче філе, свіжі печериці, вершки, петрушка." },
+                { name: "Піца Кото Бене", desc: "Перетерті томати, моцарела, рикота, прошуто кото, орегано, базилік, мигдалеві пластівці." },
+                { name: "Піца Сей Формаджі з бебі моцарелою", desc: "Моцарела бебі, фета, пармезан, горгонзола, проволоне, моцарела." },
+                { name: "Піца Особлива Il Molino", desc: "Моцарела, проволоне, горгонзола, пармезан, в’ялені томати, парма." },
+                { name: "Піца Селмон", desc: "Лосось, моцарела, рікота, пармезан, червона ікра, рукола." },
+                { name: "Піца Кватро Формаджі з пармою та малиновим кюлі", desc: "Парма, пармезан, моцарела, проволоне, горгонзола, карамелізована цибуля, рукола, розмарин, малинове кюлі." },
+                { name: "Піца з морепродуктами", desc: "Моцарела, креветки, кальмари, маринована синя цибуля, трюфельний соус, нитка чилі." },
+                { name: "Піца Американа", desc: "Перетерті томати, моцарела, кукурудза, ковбаски, картопля фрі." },
+                { name: "Піца Кватро Формаджі з в’яленими томатами та трюфельним медом", desc: "Моцарела, горгонзола, пармезан, проволоне, в’ялені томати, трюфельний мед." },
+                { name: "Піца Панчета Кон Чіпола з пепероні", desc: "Пепероні, бекон, пармезан, моцарела, карамелізована цибуля, вершки, соус BBQ." },
+                { name: "Піца Мілано", desc: "Перетерті томати, моцарела, салямі Мілано." },
+                { name: "Піца Капрічіоза", desc: "Перетерті томати, артишоки, прошуто кото, оливки Каламата, свіжі печериці, моцарела." },
+                { name: "Піца Боскайола", desc: "Мюнхенські ковбаски, моцарела, печериці, цибуля, вершки, часникова олія, кріп." },
+                { name: "Піца Чічіна", desc: "Бекон, моцарела, карамелізована цибуля, вершки, часникова олія." },
+                { name: "Піца Сільвія", desc: "Перетерті томати, моцарела, пармська шинка, в’ялені томати, рикота, базилік." },
+                { name: "Піца Вегана Кон Тофу", desc: "Перетерті томати, кабачок, смажені печериці, маринований солодкий перець, червона цибуля, сир тофу в соєвому соусі, часникова олія, рукола, крем бальзамік." },
+                { name: "Піца Тенереца (гостра)", desc: "Курка, моцарела, джем з беконом, груша маринована, соус з копченого сиру, пармезан, сирна еспума, приправа фурікаке." },
+                { name: "Піца Тенереца (негостра)", desc: "Курка, моцарела, джем з беконом, груша маринована, вершки, пармезан, сирна еспума, приправа фурікаке." },
+            ];
+
+            const totals = pizzaData.length;
+
+            // --- 2. ПРИВ'ЯЗКИ ДО HTML ЕЛЕМЕНТІВ ---
+            const startBtn = document.getElementById('start-btn');
+            const restartBtn = document.getElementById('restart-btn');
+            const exportBtn = document.getElementById('export-btn');
+            const intro = document.getElementById('intro');
+            const gameArea = document.getElementById('game-area');
+            const pizzaName = document.getElementById('pizza-name');
+            const choicesEl = document.getElementById('choices-el');
+            const nextBtn = document.getElementById('next-btn');
+            const skipBtn = document.getElementById('skip-btn');
+            
+            const doneCount = document.getElementById('done-count');
+            const correctCount = document.getElementById('correct-count');
+            const wrongCount = document.getElementById('wrong-count');
+            const scoreEl = document.getElementById('score-el');
+            const progBar = document.getElementById('progress-bar');
+            const totalCount = document.getElementById('total-count');
+
+            // Ініціалізація загальної кількості питань
+            totalCount.textContent = totals;
+
+
+            // --- 3. ЗМІННІ ТА ЛОГІКА ІГРИ ---
+            let order, idx, done, correct, wrong, score;
+
+            /** Функція перемішування (алгоритм Фішера-Єйтса) */
+            function shuffle(b){
+              for (let i = b.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [b[i], b[j]] = [b[j], b[i]];
+              }
+              return b;
+            }
+
+            /** Запуск нової гри */
+            function startGame(){
+              order = shuffle(pizzaData.map((_, i) => i));
+              idx = 0; done = 0; correct = 0; wrong = 0; score = 0;
+              updateStats();
+              intro.style.display = 'none';
+              gameArea.style.display = 'block';
+              restartBtn.style.display = 'inline-block';
+              exportBtn.style.display = 'inline-block';
+              renderQuestion();
+            }
+
+            /** Рендер нового питання */
+            function renderQuestion(){
+              const qIdx = order[idx];
+              const pizza = pizzaData[qIdx];
+              pizzaName.textContent = pizza.name;
+              
+              // Оновлення прогрес-бару
+              progBar.style.width = Math.round((done / totals) * 100) + '%';
+              progBar.textContent = `${done}/${totals}`;
+              
+              // Формування варіантів відповіді (правильний + 3 неправильних)
+              const pool = pizzaData.filter((_, i) => i !== qIdx);
+              const distract = shuffle(pool).slice(0, 3).map(x => x.desc);
+              const opts = shuffle([pizza.desc, ...distract]);
+              
+              choicesEl.innerHTML = '';
+              
+              opts.forEach(opt => {
+                const div = document.createElement('div');
+                div.className = 'choice';
+                div.textContent = opt;
+                div.onclick = () => handleChoice(div, opt, pizza.desc);
+                choicesEl.appendChild(div);
+              });
+              
+              // UI
+              nextBtn.style.display = 'none';
+            }
+
+            /** Обробка вибору користувача */
+            function handleChoice(el, selected, correctDesc){
+              // Блокуємо всі кнопки вибору після відповіді
+              document.querySelectorAll('.choice').forEach(b => b.onclick = null);
+              
+              if(selected === correctDesc){
+                el.classList.add('correct');
+                correct++; done++;
+                score += 10;
+              } else {
+                el.classList.add('wrong');
+                // Виділяємо правильну відповідь
+                document.querySelectorAll('.choice').forEach(b => { 
+                    if(b.textContent === correctDesc) b.classList.add('correct'); 
+                });
+                wrong++; done++;
+                score += 0;
+              }
+              
+              updateStats();
+              
+              // Показуємо кнопку "Наступне питання"
+              nextBtn.style.display = 'inline-block';
+            }
+
+            /** Оновлення лічильників статистики */
+            function updateStats(){
+              doneCount.textContent = done;
+              correctCount.textContent = correct;
+              wrongCount.textContent = wrong;
+              scoreEl.textContent = score + ' / ' + (totals * 10);
+              progBar.style.width = Math.round((done / totals) * 100) + '%';
+              progBar.textContent = `${done}/${totals}`;
+            }
+
+            /** Завершення гри та відображення результатів */
+            function finishGame(){
+              const pct = Math.round((correct / totals) * 100);
+              let msg = `Гра завершена!\nПравильних: ${correct}\nНеправильних: ${wrong}\nРезультат: ${pct}%\n\nРекомендації:\n`;
+              
+              if(pct >= 80) msg += '- Ну машинка, дома тебе чекає смачний кунік. Чмокі в пісю.\n';
+              else if(pct >= 50) msg += '- Аййй умнічка, ще трошки Пора повторити ті піци, де допустила помилки.\n';
+              else msg += '- Ну це тільт трошки але ти молодець) Почни з розбиття на групи: сири / мʼясні / овочеві піци і повторюй по групах.\n';
+              
+              alert(msg);
+              
+              // UI для завершення
+              intro.style.display = 'block';
+              intro.querySelector('div').textContent = 'Хочеш повторити?';
+              gameArea.style.display = 'none';
+            }
+
+            // --- 4. ОБРОБНИКИ ПОДІЙ ---
+
+            /** Наступне питання */
+            nextBtn.addEventListener('click', ()=>{
+              idx++;
+              if(idx >= order.length){
+                finishGame();
+              } else {
+                renderQuestion();
+              }
+            });
+
+            /** Пропустити питання */
+            skipBtn.addEventListener('click', ()=>{
+              wrong++; done++;
+              updateStats();
+              idx++;
+              if(idx >= order.length) finishGame(); else renderQuestion();
+            });
+
+            /** Почати тест */
+            startBtn.addEventListener('click', startGame);
+
+            /** Перезапустити */
+            restartBtn.addEventListener('click', ()=>{
+              // Повторний запуск
+              intro.style.display = 'none';
+              startGame();
+            });
+            
+            /** Експорт результатів у CSV */
+            exportBtn.addEventListener('click', ()=>{
+              const data = {date: new Date().toISOString(), totals, done, correct, wrong, score};
+              const csv = 'key,value\n' + Object.entries(data).map(r=>r.join(',')).join('\n');
+              const blob = new Blob([csv], {type:'text/csv;charset=utf-8;'}); 
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a'); 
+              a.href = url; 
+              a.download = 'ilmolino_quiz_result.csv'; 
+              a.click(); 
+              URL.revokeObjectURL(url);
+            });
+
+            /** Обробка клавіатури (Enter для переходу) */
+            document.addEventListener('keydown', (e)=>{
+              if(e.key === 'Enter' && nextBtn.style.display !== 'none'){ 
+                  nextBtn.click(); 
+              }
+            });
+
+        }); 
+        // 🔚 *** КІНЕЦЬ: ОБГОРТКА DOMContentLoaded ***
+    </script>
+</body>
+</html>
